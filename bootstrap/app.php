@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 /*
 |--------------------------------------------------------------------------
@@ -12,7 +13,6 @@ use Illuminate\Foundation\Configuration\Middleware;
 */
 $basePath = dirname(__DIR__);
 $envFile = $basePath . '/.env';
-
 if (file_exists($envFile) && !function_exists('putenv_disabled_check')) {
     // Test if putenv is actually disabled
     $disabled = array_map('trim', explode(',', ini_get('disable_functions')));
@@ -22,7 +22,6 @@ if (file_exists($envFile) && !function_exists('putenv_disabled_check')) {
             ->addAdapter(\Dotenv\Repository\Adapter\ServerConstAdapter::class)
             ->immutable()
             ->make();
-
         \Dotenv\Dotenv::create($repository, $basePath)->safeLoad();
     }
 }
@@ -34,9 +33,13 @@ return Application::configure(basePath: $basePath)
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->trustProxies(at: '*', headers:
+            Request::HEADER_X_FORWARDED_FOR |
+            Request::HEADER_X_FORWARDED_HOST |
+            Request::HEADER_X_FORWARDED_PORT |
+            Request::HEADER_X_FORWARDED_PROTO
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
-
