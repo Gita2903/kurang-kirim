@@ -1,0 +1,9 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Skip jika sudah di dalam public/
+    RewriteRule ^(public/)(.*)$ $0 [L]
+
+    # Rewrite semua request ke public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
